@@ -20,6 +20,18 @@ def get_db_connection():
     return conn
 
 
+# grab one post by id, 404 if it doesnt exist
+def get_post(post_id):
+    conn = get_db_connection()
+    post = conn.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
+    conn.close()
+
+    if post is None:
+        abort(404)
+
+    return post
+
+
 # use the app.route() decorator to create a Flask view function called index()
 @app.route('/')
 def index():
@@ -29,6 +41,13 @@ def index():
     conn.close()
 
     return render_template('index.html', posts=posts)
+
+
+# route to view a single post
+@app.route('/<int:post_id>')
+def post(post_id):
+    post = get_post(post_id)
+    return render_template('post.html', post=post)
 
 
 # route to create a post
