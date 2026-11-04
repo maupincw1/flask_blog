@@ -5,6 +5,9 @@ from flask import Flask, render_template, request, url_for, flash, redirect, abo
 app = Flask(__name__)
 app.config["DEBUG"] = True
 
+# needed for flash messages
+app.config['SECRET_KEY'] = 'your secret key'
+
 
 
 # Function to open a connection to the database.db file
@@ -51,6 +54,24 @@ def post(post_id):
 
 
 # route to create a post
+@app.route('/create', methods=('GET', 'POST'))
+def create():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+
+        if not title:
+            flash('Title is required!')
+        elif not content:
+            flash('Content is required!')
+        else:
+            conn = get_db_connection()
+            conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)', (title, content))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('index'))
+
+    return render_template('create.html')
 
 
 app.run()
